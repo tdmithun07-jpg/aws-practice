@@ -1,3 +1,3 @@
 module "vpc" {
-  source = "./modules/networking"
+  source = "https://github.com/tdmithun07-jpg/aws-practice//modules/vpc"
 }
