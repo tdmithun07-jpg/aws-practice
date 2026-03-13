@@ -29,6 +29,6 @@ provider "aws" { # Configuration options }
 
 # provider "aws" {
 #   region     = "us-east-1"
-#   access_key = "AKIAUFNC336YBPI4CODB"     # Correct parameter name
-#   secret_key = "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" # Correct parameter name
+#   access_key = ""     # Correct parameter name
+#   secret_key = "" # Correct parameter name
 # }
