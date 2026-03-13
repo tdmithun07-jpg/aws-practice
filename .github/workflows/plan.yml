@@ -1,0 +1,48 @@
+name: "Terraform-Plan"
+
+on:
+  push:
+    branches:
+      - main
+jobs:
+  terraform:
+    name: "Terraform"
+    runs-on: ubuntu-latest
+    # env:
+    #     ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+    #     ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+    #     ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+    #     ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN_AWS }}
+          
+      - name: Terraform Init
+        id: init
+        run: terraform init
+        working-directory: ./environments/dev
+
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate
+        working-directory: ./environments/dev
+
+      # - name: Terraform Plan
+      #   id: plan
+      #   run: terraform plan
+      #   working-directory: ./environments/dev
+
+      # - name: terraform apply
+      #   id: apply
+      #   run: terraform apply -auto-approve
+      #   working-directory: ./environments/dev
+
+      - name : terraform destroy
+        id: destroy
+        run: terraform destroy -auto-approve
+        working-directory: ./environments/dev
