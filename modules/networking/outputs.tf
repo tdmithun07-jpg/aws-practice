@@ -13,3 +13,15 @@ output "app-subnet-id" {
 output "db-subnet-id" {
   value = aws_subnet.db-subnet.id
 }
+################################################
+#security group outputs
+################################################
+output "web-sg-id" {
+  value = aws_security_group.web-sg.id
+}
+output "app-sg-id" {
+  value = aws_security_group.app-sg.id
+}
+output "db-sg-id" {
+  value = aws_security_group.db-sg.id
+}
