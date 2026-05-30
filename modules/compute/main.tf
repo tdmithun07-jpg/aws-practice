@@ -43,7 +43,6 @@ resource "aws_network_interface" "app-interface" {
 
 resource "aws_network_interface" "db-interface" {
   subnet_id   = var.db-subnet-id
-  private_ips = ["172.16.10.100"]
 
   tags = {
     Name = var.db-network-interface-name
