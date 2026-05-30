@@ -1,10 +1,10 @@
-# resource "aws_network_interface" "web-interface" {
-#   subnet_id   = aws_subnet.my_subnet.id
+resource "aws_network_interface" "web-interface" {
+  subnet_id   = aws_subnet.my_subnet.id
 
-#   tags = {
-#     Name = var.web-network-interface-name
-#   }
-# }
+  tags = {
+    Name = var.web-network-interface-name
+  }
+}
 
 # resource "aws_instance" "web-server" {
 #   ami           = "ami-005e54dee72cc1d00" # us-west-2
@@ -20,14 +20,14 @@
 #   }
 # }
 
-# resource "aws_network_interface" "app-interface" {
-#   subnet_id   = aws_subnet.my_subnet.id
-#   private_ips = ["172.16.10.100"]
+resource "aws_network_interface" "app-interface" {
+  subnet_id   = aws_subnet.my_subnet.id
+  private_ips = ["172.16.10.100"]
 
-#   tags = {
-#     Name = var.app-network-interface-name
-#   }
-# }
+  tags = {
+    Name = var.app-network-interface-name
+  }
+}
 
 # resource "aws_instance" "app-server" {
 #   ami           = "ami-005e54dee72cc1d00" # us-west-2
@@ -42,14 +42,14 @@
 #   }
 # }
 
-# resource "aws_network_interface" "db-interface" {
-#   subnet_id   = aws_subnet.my_subnet.id
-#   private_ips = ["172.16.10.100"]
+resource "aws_network_interface" "db-interface" {
+  subnet_id   = aws_subnet.my_subnet.id
+  private_ips = ["172.16.10.100"]
 
-#   tags = {
-#     Name = var.db-network-interface-name
-#   }
-# }
+  tags = {
+    Name = var.db-network-interface-name
+  }
+}
 
 # resource "aws_instance" "db-server" {
 #   ami           = "ami-005e54dee72cc1d00" # us-west-2

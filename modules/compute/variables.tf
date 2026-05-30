@@ -1,14 +1,28 @@
+variable "vpc-id" {
+  type = string
+}
+variable "web-subnet-id" {
+  type = string
+}
+variable "app-subnet-id" {
+  type = string
+}
+variable "db-subnet-id" {
+  type = string
+}
+
+
 variable "web-network-interface-name" {
   type = string
-  default = "web_network_interface"
+  default = "web-network-interface"
 }
 variable "app-network-interface-name" {
   type = string
-  default = "app_network_interface"
+  default = "app-network-interface"
 }
 variable "db-network-interface-name" {
   type = string
-  default = "db_network_interface"
+  default = "db-network-interface"
 }
 
 variable "web-instance-name" {
