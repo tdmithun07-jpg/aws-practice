@@ -8,4 +8,8 @@ module "compute" {
   web-subnet-id = module.vpc.web-subnet-id 
   app-subnet-id = module.vpc.app-subnet-id
   db-subnet-id = module.vpc.db-subnet-id
+
+  web-sg-id = module.vpc.web-sg-id
+  app-sg-id = module.vpc.app-sg-id
+  db-sg-id = module.vpc.db-sg-id
 }
