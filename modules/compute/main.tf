@@ -50,42 +50,43 @@ resource "aws_instance" "web-server" {
 
 resource "aws_network_interface" "app-interface" {
   subnet_id   = var.app-subnet-id
+  security_groups = [var.app-sg-id]
 
   tags = {
     Name = var.app-network-interface-name
   }
 }
 
-# resource "aws_instance" "app-server" {
-#   ami           = "ami-091138d0f0d41ff90" # us-west-2
-#   instance_type = "t2.micro"
-#   associate_public_ip_address = true # Forces a dynamic public IP
-#   primary_network_interface {
-#     network_interface_id = aws_network_interface.app-interface.id
-#   }
+resource "aws_instance" "app-server" {
+  ami           = "ami-091138d0f0d41ff90" # us-west-2
+  instance_type = "t3.micro"
+  associate_public_ip_address = true # Forces a dynamic public IP
+  primary_network_interface {
+    network_interface_id = aws_network_interface.app-interface.id
+  }
 
-#  tags = {
-#     Name = var.app-instance-name
-#   }
-# }
+ tags = {
+    Name = var.app-instance-name
+  }
+}
 
 resource "aws_network_interface" "db-interface" {
   subnet_id   = var.db-subnet-id
-
+  security_groups = [var.db-sg-id]
   tags = {
     Name = var.db-network-interface-name
   }
 }
 
-# resource "aws_instance" "db-server" {
-#   ami           = "ami-091138d0f0d41ff90" # us-west-2
-#   instance_type = "t2.micro"
-#   associate_public_ip_address = true # Forces a dynamic public IP
-#   primary_network_interface {
-#     network_interface_id = aws_network_interface.db-interface.id
-#   }
+resource "aws_instance" "db-server" {
+  ami           = "ami-091138d0f0d41ff90" # us-west-2
+  instance_type = "t3.micro"
+  associate_public_ip_address = true # Forces a dynamic public IP
+  primary_network_interface {
+    network_interface_id = aws_network_interface.db-interface.id
+  }
 
-#     tags = {
-#         Name = var.db-instance-name
-#     }
-# }
+    tags = {
+        Name = var.db-instance-name
+    }
+}
