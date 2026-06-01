@@ -60,7 +60,8 @@ resource "aws_network_interface" "app-interface" {
 resource "aws_instance" "app-server" {
   ami           = "ami-091138d0f0d41ff90" # us-west-2
   instance_type = "t3.micro"
-  associate_public_ip_address = true # Forces a dynamic public IP
+  key_name      = aws_key_pair.web_key.key_name
+  
   primary_network_interface {
     network_interface_id = aws_network_interface.app-interface.id
   }
@@ -81,7 +82,7 @@ resource "aws_network_interface" "db-interface" {
 resource "aws_instance" "db-server" {
   ami           = "ami-091138d0f0d41ff90" # us-west-2
   instance_type = "t3.micro"
-  associate_public_ip_address = true # Forces a dynamic public IP
+  key_name      = aws_key_pair.web_key.key_name
   primary_network_interface {
     network_interface_id = aws_network_interface.db-interface.id
   }
