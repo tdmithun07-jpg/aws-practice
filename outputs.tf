@@ -21,3 +21,7 @@ output "app-sg-id" {
 output "db-sg-id" {
   value = module.vpc.db-sg-id
 }
+
+output "igw-id" {
+  value = module.vpc.igw-id
+}

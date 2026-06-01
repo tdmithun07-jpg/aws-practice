@@ -25,3 +25,7 @@ output "app-sg-id" {
 output "db-sg-id" {
   value = aws_security_group.db-sg.id
 }
+
+output "igw-id" {
+  value = aws_internet_gateway.igw.id
+}

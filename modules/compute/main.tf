@@ -38,9 +38,8 @@ resource "aws_instance" "web-server" {
   #associate_public_ip_address = true # Forces a dynamic public IP
   key_name      = aws_key_pair.web_key.key_name
 
-  network_interface {
+  primary_network_interface {
     network_interface_id = aws_network_interface.web-interface.id
-    device_index         = 0
   }
 
   tags = {

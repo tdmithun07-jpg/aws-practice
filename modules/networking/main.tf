@@ -128,3 +128,11 @@ resource "aws_security_group" "db-sg" {
     Name = "db-sg"
   }
 }
+
+resource "aws_internet_gateway" "igw" {
+  vpc_id = aws_vpc.VPC.id
+
+  tags = {
+    Name = "main-igw"
+  }
+}
