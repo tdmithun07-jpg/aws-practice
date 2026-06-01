@@ -25,6 +25,16 @@ variable "db-network-interface-name" {
   default = "db-network-interface"
 }
 
+variable "web-sg-id" {
+  type = string
+}
+variable "app-sg-id" {
+  type = string
+}
+variable "db-sg-id" {
+  type = string
+}
+
 variable "web-instance-name" {
   type = string
   default = "web-server"

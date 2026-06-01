@@ -17,6 +17,7 @@ resource "aws_key_pair" "web_key" {
 
 resource "aws_network_interface" "web-interface" {
   subnet_id   = var.web-subnet-id
+  security_groups = [var.web-sg-id]
 
   tags = {
     Name = var.web-network-interface-name
