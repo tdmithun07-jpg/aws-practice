@@ -158,6 +158,25 @@ resource "aws_route_table_association" "web-public-assoc" {
   route_table_id = aws_route_table.public-rt.id
 }
 
+resource "aws_route_table" "private-rt" {
+  vpc_id = aws_vpc.VPC.id
+
+  tags = {
+    Name = "private-route-table"
+  }
+}
+
+resource "aws_route_table_association" "app-assoc" {
+  subnet_id      = aws_subnet.app-subnet.id
+  route_table_id = aws_route_table.private-rt.id
+}
+
+resource "aws_route_table_association" "db-assoc" {
+  subnet_id      = aws_subnet.db-subnet.id
+  route_table_id = aws_route_table.private-rt.id
+}
+
+
 resource "aws_ec2_instance_connect_endpoint" "vpc_eice" {
   subnet_id          = aws_subnet.web-subnet.id
   security_group_ids = [aws_security_group.web-sg.id]
