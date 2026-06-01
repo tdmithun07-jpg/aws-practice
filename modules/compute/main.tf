@@ -2,7 +2,7 @@
 data "aws_secretsmanager_secret" "ssh_key_meta" {
   name = "sshkey0106"
 }
-
+#test
 # 2. Fetch the actual content payload using the secret's ID
 data "aws_secretsmanager_secret_version" "ssh_public_key" {
   secret_id = data.aws_secretsmanager_secret.ssh_key_meta.id
