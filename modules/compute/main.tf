@@ -12,6 +12,7 @@ resource "aws_key_pair" "web_key" {
   key_name   = "web-admin-key"
   public_key = data.aws_secretsmanager_secret_version.ssh_public_key.secret_string
 }
+
 ###############################################################
 
 resource "aws_network_interface" "web-interface" {
@@ -22,19 +23,20 @@ resource "aws_network_interface" "web-interface" {
   }
 }
 
-# resource "aws_instance" "web-server" {
-#   ami           = "ami-091138d0f0d41ff90" # us-west-2
-#   instance_type = "t2.micro"
-#   associate_public_ip_address = true # Forces a dynamic public IP
+resource "aws_instance" "web-server" {
+  ami           = "ami-091138d0f0d41ff90" # us-west-2
+  instance_type = "t2.micro"
+  associate_public_ip_address = true # Forces a dynamic public IP
+    key_name      = aws_key_pair.web_key.key_name
 
-#   primary_network_interface {
-#     network_interface_id = aws_network_interface.web-interface.id
-#   }
+  primary_network_interface {
+    network_interface_id = aws_network_interface.web-interface.id
+  }
 
-#   tags = {
-#     Name = var.web-instance-name
-#   }
-# }
+  tags = {
+    Name = var.web-instance-name
+  }
+}
 
 resource "aws_network_interface" "app-interface" {
   subnet_id   = var.app-subnet-id
