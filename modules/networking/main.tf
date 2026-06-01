@@ -115,7 +115,7 @@ resource "aws_security_group" "db-sg" {
   egress {
     from_port   = 0
     to_port     = 0
-    protocol    = "tcp"
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
   ingress {
@@ -128,11 +128,32 @@ resource "aws_security_group" "db-sg" {
     Name = "db-sg"
   }
 }
-
+################################################
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.VPC.id
 
   tags = {
     Name = "main-igw"
   }
+}
+######################################################
+# 1. Create a Public Route Table
+resource "aws_route_table" "public-rt" {
+  vpc_id = aws_vpc.VPC.id
+
+  # This route sends ALL outbound traffic (0.0.0.0/0) to your Internet Gateway
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.igw.id
+  }
+
+  tags = {
+    Name = "public-route-table"
+  }
+}
+
+# 2. Associate the Route Table with your Web Subnet
+resource "aws_route_table_association" "web-public-assoc" {
+  subnet_id      = aws_subnet.web-subnet.id
+  route_table_id = aws_route_table.public-rt.id
 }

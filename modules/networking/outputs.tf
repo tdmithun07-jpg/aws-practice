@@ -29,3 +29,7 @@ output "db-sg-id" {
 output "igw-id" {
   value = aws_internet_gateway.igw.id
 }
+
+output "public-route-table-id" {
+  value = aws_route_table.public-rt.id
+}

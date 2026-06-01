@@ -25,3 +25,7 @@ output "db-sg-id" {
 output "igw-id" {
   value = module.vpc.igw-id
 }
+
+output "public-route-table-id" {
+  value = module.vpc.public-route-table-id
+}
