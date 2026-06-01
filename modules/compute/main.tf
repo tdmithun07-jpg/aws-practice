@@ -22,15 +22,25 @@ resource "aws_network_interface" "web-interface" {
     Name = var.web-network-interface-name
   }
 }
+######################################################
+resource "aws_eip" "web-eip" {
+  domain            = "vpc"
+  network_interface = aws_network_interface.web-interface.id
 
+  tags = {
+    Name = "web-eip"
+  }
+}
+#########################################################
 resource "aws_instance" "web-server" {
   ami           = "ami-091138d0f0d41ff90" # us-west-2
   instance_type = "t2.micro"
-  associate_public_ip_address = true # Forces a dynamic public IP
-    key_name      = aws_key_pair.web_key.key_name
+  #associate_public_ip_address = true # Forces a dynamic public IP
+  key_name      = aws_key_pair.web_key.key_name
 
-  primary_network_interface {
+  network_interface {
     network_interface_id = aws_network_interface.web-interface.id
+    device_index         = 0
   }
 
   tags = {
