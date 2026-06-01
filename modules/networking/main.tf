@@ -157,3 +157,12 @@ resource "aws_route_table_association" "web-public-assoc" {
   subnet_id      = aws_subnet.web-subnet.id
   route_table_id = aws_route_table.public-rt.id
 }
+
+resource "aws_ec2_instance_connect_endpoint" "vpc_eice" {
+  subnet_id          = aws_subnet.web-subnet.id
+  security_group_ids = [aws_security_group.web-sg.id]
+
+  tags = {
+    Name = "vpc-browser-ssh-endpoint"
+  }
+}
