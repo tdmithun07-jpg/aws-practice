@@ -33,8 +33,8 @@ resource "aws_eip" "web-eip" {
 }
 #########################################################
 resource "aws_instance" "web-server" {
-  ami           = "ami-091138d0f0d41ff90" # us-west-2
-  instance_type = "t2.micro"
+  ami           = "ami-091138d0f0d41ff90" 
+  instance_type = "t3.micro"
   #associate_public_ip_address = true # Forces a dynamic public IP
   key_name      = aws_key_pair.web_key.key_name
 
