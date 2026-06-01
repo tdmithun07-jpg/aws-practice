@@ -9,7 +9,7 @@ data "aws_secretsmanager_secret_version" "ssh_public_key" {
 
 # Register the public key string as an AWS Key Pair
 resource "aws_key_pair" "web_key" {
-  key_name   = "web-admin-key"
+  key_name   = "aws-key-0106"
   public_key = data.aws_secretsmanager_secret_version.ssh_public_key.secret_string
 }
 
