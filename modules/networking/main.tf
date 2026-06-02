@@ -39,117 +39,90 @@ resource "aws_subnet" "db-subnet" {
 #security groups
 #############################
 
+# 1. Define the base security groups completely empty of inline rules
 resource "aws_security_group" "web-sg" {
   name        = "web-sg"
-  description = "Allow HTTP, HTTPS, and SSH traffic from the public"
+  description = "Allow SSH from anywhere"
   vpc_id      = aws_vpc.VPC.id
-
-  # Public HTTP access
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  # Public HTTPS access
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  # Public SSH access (Best practice: Restrict this to your office/home IP instead of 0.0.0.0/0 if possible)
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = { Name = "web-sg" }
+  tags        = { Name = "web-sg" }
 }
 
 resource "aws_security_group" "app-sg" {
   name        = "app-sg"
-  description = "Allow management traffic and app requests from web tier"
+  description = "Allow traffic from web-sg"
   vpc_id      = aws_vpc.VPC.id
-
-  # SSH Management from the web/jump tier
-  ingress {
-    from_port       = 22
-    to_port         = 22
-    protocol        = "tcp"
-    security_groups = [aws_security_group.web-sg.id]
-  }
-
-  # Backend App traffic from the web tier
-  ingress {
-    from_port       = 5000
-    to_port         = 5000
-    protocol        = "tcp"
-    security_groups = [aws_security_group.web-sg.id]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = { Name = "app-sg" }
+  tags        = { Name = "app-sg" }
 }
 
 resource "aws_security_group" "db-sg" {
   name        = "db-sg"
-  description = "Allow database traffic from app tier and administrative SSH access"
+  description = "Allow traffic from app-sg"
   vpc_id      = aws_vpc.VPC.id
-
-  # Database traffic from the App Tier
-  ingress {
-    from_port       = 3306
-    to_port         = 3306
-    protocol        = "tcp"
-    security_groups = [aws_security_group.app-sg.id]
-  }
-
-  # FIX FOR YOUR TIMEOUT: Allows you to jump straight from the web/jump box 
-  # or step through the app box to the DB via SSH.
-  ingress {
-    from_port       = 22
-    to_port         = 22
-    protocol        = "tcp"
-    security_groups = [
-      aws_security_group.web-sg.id,
-      aws_security_group.app-sg.id
-    ]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = { Name = "db-sg" }
+  tags        = { Name = "db-sg" }
 }
-################################################
-resource "aws_internet_gateway" "igw" {
-  vpc_id = aws_vpc.VPC.id
 
-  tags = {
-    Name = "main-igw"
-  }
+# 2. Define the cross-referenced rules standalone
+resource "aws_security_group_rule" "web_allow_ssh" {
+  type              = "ingress"
+  from_port         = 22
+  to_port           = 22
+  protocol          = "tcp"
+  security_group_id = aws_security_group.web-sg.id
+  cidr_blocks       = ["0.0.0/0"]
+}
+
+resource "aws_security_group_rule" "web_allow_http" {
+  type              = "ingress"
+  from_port         = 80
+  to_port           = 80
+  protocol          = "tcp"
+  security_group_id = aws_security_group.web-sg.id
+  cidr_blocks       = ["0.0.0/0"]
+}
+
+resource "aws_security_group_rule" "web_allow_https" {
+  type              = "ingress"
+  from_port         = 443
+  to_port           = 443
+  protocol          = "tcp"
+  security_group_id = aws_security_group.web-sg.id
+  cidr_blocks       = ["0.0.0/0"]
+}
+
+resource "aws_security_group_rule" "app_allow_ssh_from_web" {
+  type                     = "ingress"
+  from_port                = 22
+  to_port                  = 22
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.app-sg.id
+  source_security_group_id = aws_security_group.web-sg.id
+}
+
+resource "aws_security_group_rule" "db_allow_ssh_from_app" {
+  type                     = "ingress"
+  from_port                = 22
+  to_port                  = 22
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.db-sg.id
+  source_security_group_id = aws_security_group.app-sg.id
+}
+
+resource "aws_security_group_rule" "db_allow_ssh_from_web" {
+  type                     = "ingress"
+  from_port                = 22
+  to_port                  = 22
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.db-sg.id
+  source_security_group_id = aws_security_group.web-sg.id
+}
+
+resource "aws_security_group_rule" "db_allow_3306_from_app" {
+  type                     = "ingress"
+  from_port                = 3306
+  to_port                  = 3306
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.db-sg.id
+  source_security_group_id = aws_security_group.app-sg.id
 }
 ######################################################
 # 1. Create a Public Route Table
