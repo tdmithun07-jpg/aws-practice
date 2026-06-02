@@ -41,9 +41,10 @@ resource "aws_subnet" "db-subnet" {
 
 resource "aws_security_group" "web-sg" {
   name        = "web-sg"
-  description = "Allow HTTP and SSH traffic"
+  description = "Allow HTTP, HTTPS, and SSH traffic from the public"
   vpc_id      = aws_vpc.VPC.id
 
+  # Public HTTP access
   ingress {
     from_port   = 80
     to_port     = 80
@@ -51,13 +52,15 @@ resource "aws_security_group" "web-sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
+  # Public HTTPS access
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  # Public SSH access (Best practice: Restrict this to your office/home IP instead of 0.0.0.0/0 if possible)
   ingress {
     from_port   = 22
     to_port     = 22
@@ -65,16 +68,22 @@ resource "aws_security_group" "web-sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = {
-    Name = "web-sg"
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
   }
+
+  tags = { Name = "web-sg" }
 }
 
 resource "aws_security_group" "app-sg" {
   name        = "app-sg"
-  description = "Allow traffic from web-sg"
+  description = "Allow management traffic and app requests from web tier"
   vpc_id      = aws_vpc.VPC.id
 
+  # SSH Management from the web/jump tier
   ingress {
     from_port       = 22
     to_port         = 22
@@ -82,34 +91,12 @@ resource "aws_security_group" "app-sg" {
     security_groups = [aws_security_group.web-sg.id]
   }
 
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"] 
-  }
+  # Backend App traffic from the web tier
   ingress {
     from_port       = 5000
     to_port         = 5000
     protocol        = "tcp"
     security_groups = [aws_security_group.web-sg.id]
-  }
-
-  tags = {
-    Name = "app-sg"
-  }
-}
-
-resource "aws_security_group" "db-sg" {
-  name        = "db-sg"
-  description = "Allow traffic from app-sg"
-  vpc_id      = aws_vpc.VPC.id
-
-  ingress {
-    from_port       = 22
-    to_port         = 22
-    protocol        = "tcp"
-    security_groups = [aws_security_group.app-sg.id]
   }
 
   egress {
@@ -118,15 +105,43 @@ resource "aws_security_group" "db-sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  tags = { Name = "app-sg" }
+}
+
+resource "aws_security_group" "db-sg" {
+  name        = "db-sg"
+  description = "Allow database traffic from app tier and administrative SSH access"
+  vpc_id      = aws_vpc.VPC.id
+
+  # Database traffic from the App Tier
   ingress {
     from_port       = 3306
     to_port         = 3306
     protocol        = "tcp"
     security_groups = [aws_security_group.app-sg.id]
   }
-  tags = {
-    Name = "db-sg"
+
+  # FIX FOR YOUR TIMEOUT: Allows you to jump straight from the web/jump box 
+  # or step through the app box to the DB via SSH.
+  ingress {
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
+    security_groups = [
+      aws_security_group.web-sg.id,
+      aws_security_group.app-sg.id
+    ]
   }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = { Name = "db-sg" }
 }
 ################################################
 resource "aws_internet_gateway" "igw" {
