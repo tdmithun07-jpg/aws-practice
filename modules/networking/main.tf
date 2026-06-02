@@ -222,6 +222,31 @@ resource "aws_route_table_association" "db-assoc" {
   route_table_id = aws_route_table.private-rt.id
 }
 
+######################################################
+# NAT GATEWAY & PRIVATE ROUTING
+# Allows both App and DB instances to safely download packages
+######################################################
+
+resource "aws_eip" "nat_eip" {
+  domain     = "vpc"
+  depends_on = [aws_internet_gateway.igw]
+  tags       = { Name = "nat-gateway-eip" }
+}
+
+resource "aws_nat_gateway" "nat_gw" {
+  allocation_id = aws_eip.nat_eip.id
+  subnet_id     = aws_subnet.web-subnet.id # Must be deployed in your public subnet
+
+  tags = { Name = "3tier-nat-gateway" }
+}
+
+# This resource cleanly updates your existing private route table
+resource "aws_route" "private_nat_route" {
+  route_table_id         = aws_route_table.private-rt.id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.nat_gw.id
+}
+
 
 resource "aws_ec2_instance_connect_endpoint" "vpc_eice" {
   subnet_id          = aws_subnet.web-subnet.id
