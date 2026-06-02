@@ -35,6 +35,14 @@ resource "aws_subnet" "db-subnet" {
   }
 }
 
+resource "aws_internet_gateway" "igw" {
+  vpc_id = aws_vpc.VPC.id
+
+  tags = {
+    Name = "3tire-igw"
+  }
+}
+
 #########################
 #security groups
 #############################
@@ -68,7 +76,7 @@ resource "aws_security_group_rule" "web_allow_ssh" {
   to_port           = 22
   protocol          = "tcp"
   security_group_id = aws_security_group.web-sg.id
-  cidr_blocks       = ["0.0.0/0"]
+  cidr_blocks       = ["0.0.0.0/0"]
 }
 
 resource "aws_security_group_rule" "web_allow_http" {
@@ -77,7 +85,7 @@ resource "aws_security_group_rule" "web_allow_http" {
   to_port           = 80
   protocol          = "tcp"
   security_group_id = aws_security_group.web-sg.id
-  cidr_blocks       = ["0.0.0/0"]
+  cidr_blocks       = ["0.0.0.0/0"]
 }
 
 resource "aws_security_group_rule" "web_allow_https" {
@@ -86,7 +94,7 @@ resource "aws_security_group_rule" "web_allow_https" {
   to_port           = 443
   protocol          = "tcp"
   security_group_id = aws_security_group.web-sg.id
-  cidr_blocks       = ["0.0.0/0"]
+  cidr_blocks       = ["0.0.0.0/0"]
 }
 
 resource "aws_security_group_rule" "app_allow_ssh_from_web" {
