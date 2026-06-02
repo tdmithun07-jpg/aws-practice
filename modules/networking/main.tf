@@ -47,29 +47,67 @@ resource "aws_internet_gateway" "igw" {
 #security groups
 #############################
 
-# 1. Define the base security groups completely empty of inline rules
+######################################################
+# 1. Base Security Groups (Empty Layout)
+######################################################
+
 resource "aws_security_group" "web-sg" {
   name        = "web-sg"
-  description = "Allow SSH from anywhere"
+  description = "Allow SSH, HTTP, and HTTPS from anywhere"
   vpc_id      = aws_vpc.VPC.id
   tags        = { Name = "web-sg" }
 }
 
 resource "aws_security_group" "app-sg" {
   name        = "app-sg"
-  description = "Allow traffic from web-sg"
+  description = "Allow management and application traffic from web-sg"
   vpc_id      = aws_vpc.VPC.id
   tags        = { Name = "app-sg" }
 }
 
 resource "aws_security_group" "db-sg" {
   name        = "db-sg"
-  description = "Allow traffic from app-sg"
+  description = "Allow traffic from app tier and administrative SSH"
   vpc_id      = aws_vpc.VPC.id
   tags        = { Name = "db-sg" }
 }
 
-# 2. Define the cross-referenced rules standalone
+######################################################
+# 2. Global Egress Rules (Allows Outbound Chaining)
+######################################################
+
+resource "aws_security_group_rule" "web_allow_all_egress" {
+  type              = "egress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  security_group_id = aws_security_group.web-sg.id
+  cidr_blocks       = ["0.0.0.0/0"]
+}
+
+resource "aws_security_group_rule" "app_allow_all_egress" {
+  type              = "egress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  security_group_id = aws_security_group.app-sg.id
+  cidr_blocks       = ["0.0.0.0/0"]
+}
+
+resource "aws_security_group_rule" "db_allow_all_egress" {
+  type              = "egress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  security_group_id = aws_security_group.db-sg.id
+  cidr_blocks       = ["0.0.0.0/0"]
+}
+
+######################################################
+# 3. Ingress Rules
+######################################################
+
+# --- WEB TIER INBOUND ---
 resource "aws_security_group_rule" "web_allow_ssh" {
   type              = "ingress"
   from_port         = 22
@@ -97,6 +135,7 @@ resource "aws_security_group_rule" "web_allow_https" {
   cidr_blocks       = ["0.0.0.0/0"]
 }
 
+# --- APP TIER INBOUND ---
 resource "aws_security_group_rule" "app_allow_ssh_from_web" {
   type                     = "ingress"
   from_port                = 22
@@ -106,6 +145,16 @@ resource "aws_security_group_rule" "app_allow_ssh_from_web" {
   source_security_group_id = aws_security_group.web-sg.id
 }
 
+resource "aws_security_group_rule" "app_allow_python_from_web" {
+  type                     = "ingress"
+  from_port                = 5000
+  to_port                  = 5000
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.app-sg.id
+  source_security_group_id = aws_security_group.web-sg.id
+}
+
+# --- DATABASE TIER INBOUND ---
 resource "aws_security_group_rule" "db_allow_ssh_from_app" {
   type                     = "ingress"
   from_port                = 22
@@ -132,6 +181,7 @@ resource "aws_security_group_rule" "db_allow_3306_from_app" {
   security_group_id        = aws_security_group.db-sg.id
   source_security_group_id = aws_security_group.app-sg.id
 }
+
 ######################################################
 # 1. Create a Public Route Table
 resource "aws_route_table" "public-rt" {
